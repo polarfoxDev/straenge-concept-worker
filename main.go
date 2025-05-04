@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	threshold     = 10
+	threshold     = 15
 	checkInterval = 5 * time.Second
 )
 
