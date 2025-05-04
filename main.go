@@ -1,0 +1,107 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"straenge-concept-worker/m/ai"
+	"straenge-concept-worker/m/models"
+	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
+	"github.com/sirupsen/logrus"
+)
+
+var (
+	ctx    = context.Background()
+	client *redis.Client
+)
+
+const (
+	threshold     = 10
+	checkInterval = 5 * time.Second
+)
+
+func init() {
+	// read dotenv file
+	err := godotenv.Load()
+	if err != nil {
+		logrus.Warn("No .env file found")
+	}
+	// setup logging
+	lvl, ok := os.LookupEnv("LOG_LEVEL")
+	// LOG_LEVEL not set, let's default to info
+	if !ok {
+		lvl = "info"
+	}
+	// parse string, this is built-in feature of logrus
+	ll, err := logrus.ParseLevel(lvl)
+	if err != nil {
+		ll = logrus.InfoLevel
+	}
+	// set global log level
+	logrus.SetLevel(ll)
+	logrus.Info("Logging initialized with level: ", lvl)
+}
+
+func main() {
+	redisUrl, success := os.LookupEnv("REDIS_URL")
+	if !success {
+		logrus.Fatal("REDIS_URL not set")
+		return
+	}
+	apiKey, success := os.LookupEnv("OPENAI_API_KEY")
+	if !success {
+		logrus.Fatal("OPENAI_API_KEY not set")
+		return
+	}
+	client = redis.NewClient(&redis.Options{
+		Addr: redisUrl,
+	})
+
+	generator := ai.IdeaGenerator{}
+	generator.Login(apiKey)
+
+	logrus.Info("Started worker...")
+
+	for {
+		logrus.Info("Checking queue...")
+		len, err := client.LLen(ctx, "generate-riddle").Result()
+		if err != nil {
+			logrus.Errorf("❌ Redis Error: %v", err)
+			time.Sleep(30 * time.Second)
+			continue
+		}
+
+		if len < threshold {
+			logrus.Infof("⚠️ queue only has %d elements – filling...", len)
+			concepts := generateConcepts(&generator)
+			for i, concept := range *concepts {
+				conceptJson, err := json.Marshal(concept)
+				if err != nil {
+					logrus.Errorf("❌ Error marshalling JSON: %v", err)
+					continue
+				}
+				job := models.Job{
+					Type:    "new",
+					Payload: string(conceptJson),
+				}
+				data, err := json.Marshal(job)
+				if err != nil {
+					logrus.Errorf("❌ Error marshalling JSON: %v", err)
+					continue
+				}
+				if err := client.LPush(ctx, "generate-riddle", data).Err(); err != nil {
+					logrus.Errorf("❌ Error inserting job: %v", err)
+				} else {
+					logrus.Infof("➕ New job added (%d)", i+1)
+				}
+			}
+		} else {
+			logrus.Infof("✅ queue is filled (%d jobs)", len)
+		}
+
+		time.Sleep(checkInterval)
+	}
+}
