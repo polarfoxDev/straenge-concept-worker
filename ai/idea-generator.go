@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"slices"
 
@@ -50,7 +51,7 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 		7. Gib ausschließlich ein gültiges JSON-Array in einer Zeile zurück, ohne sonstigen Text. Verzichte auch auf einen Codeblock.
 		
 		Beispiele (Blacklist): FRÜCHTE, GEMÜSE, MUSIKINSTRUMENTE, OSTERN, KANINCHEN, COMPUTER, ARCHITEKTUR, PHILOSOPHIE, KÜCHENGERÄTE, GAMEOFTHRONES, FISCHARTEN, PROGRAMMIERSPRACHEN, AUTOMARKEN, DEUTSCHRAP, SPANISCHEKÜCHE, WELTMUSIK`
-	result, err := gen.rawRequest(prompt)
+	result, err := gen.reasoningRequest(prompt, "o3", "medium")
 	if err != nil {
 		logrus.Error("Error getting super solutions")
 		return nil, err
@@ -89,7 +90,7 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(unsafeSuperSolution string) (s
 		- Musikinstrumente -> Klangquellen
 		- Süßwasserfische -> Am Haken!
 		`
-	result, err := gen.rawRequest(prompt)
+	result, err := gen.fastRequest(prompt, "gpt-4o")
 	logrus.Debug("raw gpt result: " + result)
 	return result, err
 }
@@ -109,7 +110,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(unsafeSuperSolution string)
 		Beispielformat (für das Thema "Automarken"):
 		["Volkswagen","Toyota","Ford", ...]
 		`
-	result, err := gen.rawRequest(prompt)
+	result, err := gen.reasoningRequest(prompt, "o3", "high")
 	if err != nil {
 		logrus.Error("Error getting word pool")
 		return nil, err
@@ -133,17 +134,31 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(unsafeSuperSolution string)
 	return allowedItems, err
 }
 
-func (gen *IdeaGenerator) rawRequest(query string) (string, error) {
-	client := resty.New()
+func (gen *IdeaGenerator) reasoningRequest(query string, model string, effort string) (string, error) {
+	body := map[string]any{
+		"model":            model,
+		"reasoning_effort": effort,
+		"messages":         []any{map[string]any{"role": "system", "content": query}},
+	}
+	return gen.rawRequest(body)
+}
+
+func (gen *IdeaGenerator) fastRequest(query string, model string) (string, error) {
+	body := map[string]any{
+		"model":    model,
+		"messages": []any{map[string]any{"role": "user", "content": query}},
+	}
+	return gen.rawRequest(body)
+}
+
+func (gen *IdeaGenerator) rawRequest(body map[string]any) (string, error) {
+	logrus.Debug("raw gpt request: " + string(body["messages"].([]any)[0].(map[string]any)["content"].(string)))
+	client := resty.New().SetTimeout(time.Duration(5 * time.Minute))
 
 	response, err := client.R().
 		SetAuthToken(gen.openAiApiKey).
 		SetHeader("Content-Type", "application/json").
-		SetBody(map[string]any{
-			"model":      "gpt-4o",
-			"messages":   []any{map[string]any{"role": "system", "content": query}},
-			"max_tokens": 500,
-		}).
+		SetBody(body).
 		Post(apiEndpoint)
 
 	if err != nil {
@@ -151,16 +166,16 @@ func (gen *IdeaGenerator) rawRequest(query string) (string, error) {
 		return "", err
 	}
 
-	body := response.Body()
+	responseBody := response.Body()
 
 	var data map[string]any
-	err = json.Unmarshal(body, &data)
+	err = json.Unmarshal(responseBody, &data)
 	if err != nil {
 		logrus.Error("Error while decoding JSON response:", err)
 		return "", err
 	}
 
-	// Extract the content from the JSON response
+	logrus.Debug("raw gpt result: " + string(responseBody))
 	content := data["choices"].([]any)[0].(map[string]any)["message"].(map[string]any)["content"].(string)
 	return content, nil
 }
