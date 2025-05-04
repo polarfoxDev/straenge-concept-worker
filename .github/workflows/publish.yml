@@ -1,0 +1,27 @@
+name: Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: docker login
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: set up docker buildx
+        run: |
+          docker buildx create --name workerbuild --use
+      - name: Build and Publish Docker Image
+        run: |
+          docker buildx build . \
+            --platform linux/arm64 \
+            --tag ghcr.io/polarfoxdev/straenge-concept-worker:latest \
+            --tag ghcr.io/polarfoxdev/straenge-concept-worker:${{ github.sha }} \
+            --push
