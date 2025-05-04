@@ -39,7 +39,7 @@ func (gen *IdeaGenerator) Login(apiKey string) {
 
 func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 	prompt := `
-		Erstelle mindestens 50 Oberbegriffe (Kategorien) nach folgenden Regeln:
+		Erstelle mindestens 40 Oberbegriffe (Kategorien) nach folgenden Regeln:
 
 		1. Jeder Begriff besteht aus genau einem Wort (Komposita wie "Weltmusik" sind erlaubt).
 		2. Die Begriffe dürfen sich inhaltlich nicht überschneiden.
@@ -103,7 +103,8 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(unsafeSuperSolution string)
 		3. Meistens soll jeder Begriff aus einem Wort bestehen (Komposita erlaubt); einige wenige dürfen aus höchstens drei Wörtern bestehen.
 		4. Begriffe dürfen sich ähneln, aber nicht identisch sein; vermeide unnötige Wiederholungen.
 		5. Gib ausschließlich ein gültiges JSON-Array in einer Zeile zurück - ohne einleitenden oder nachfolgenden Text. Verzichte auch auf einen Codeblock.
-		6. Qualität vor Quantität: Wenn du nur 10 Begriffe kennst, die allgemein verständlich und relevant sind, ist das auch in Ordnung.
+		6. Qualität vor Quantität: Wenn du nur 10-15 Begriffe kennst, die allgemein verständlich und relevant sind, ist das auch in Ordnung.
+		7. Bevorzuge kurze Begriffe (4-8 Zeichen) soweit möglich.
 
 		Beispielformat (für das Thema "Automarken"):
 		["Volkswagen","Toyota","Ford", ...]
