@@ -30,6 +30,13 @@ func makeWordSafe(word string) string {
 	return word
 }
 
+func makeWordUnsafe(word string) string {
+	for i, specialCharacter := range specialCharacterMap {
+		word = strings.ReplaceAll(word, strconv.Itoa(i), specialCharacter)
+	}
+	return word
+}
+
 type IdeaGenerator struct {
 	openAiApiKey string
 }
@@ -47,11 +54,12 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 		3. Die Begriffe müssen mindestens 6 und höchstens 30 Zeichen lang sein.
 		4. Verwende keinerlei Wörter aus der unten stehenden Blacklist.
 		5. Wähle überwiegend allgemeinere Kategorien, füge aber auch speziellere Kategorien hinzu (z. B. "SpanischeKüche", "Süßwasserfische", "Deutschrap" oder ein bestimmter Film).
-		6. Überrasche mich mit mindestens 10 ungewöhnlichen oder schrulligen Kategorien.
+		6. Überrasche mich mit mindestens 2 ungewöhnlichen oder schrulligen Kategorien.
 		7. Gib ausschließlich ein gültiges JSON-Array in einer Zeile zurück, ohne sonstigen Text. Verzichte auch auf einen Codeblock.
+                8. Die Kategorien sollten allgemein bekannte Begriffe sein, die sich für ein Rätsel eignen, bei dem später passende Unterbegriffe gesucht werden. KEINE WORTNEUSCHÖPFUNGEN!
 		
 		Beispiele (Blacklist): FRÜCHTE, GEMÜSE, MUSIKINSTRUMENTE, OSTERN, KANINCHEN, COMPUTER, ARCHITEKTUR, PHILOSOPHIE, KÜCHENGERÄTE, GAMEOFTHRONES, FISCHARTEN, PROGRAMMIERSPRACHEN, AUTOMARKEN, DEUTSCHRAP, SPANISCHEKÜCHE, WELTMUSIK`
-	result, err := gen.reasoningRequest(prompt, "o3", "medium")
+	result, err := gen.reasoningRequest(prompt, "o4-mini", "high")
 	if err != nil {
 		logrus.Error("Error getting super solutions")
 		return nil, err
@@ -75,7 +83,8 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 	return allowedItems, err
 }
 
-func (gen *IdeaGenerator) GetThemeBySuperSolution(unsafeSuperSolution string) (string, error) {
+func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string, error) {
+	unsafeSuperSolution := makeWordUnsafe(superSolution)
 	prompt := `
 		Formuliere eine rätselhafte Kurzbeschreibung zum Oberbegriff ` + unsafeSuperSolution + `.
 		
@@ -95,7 +104,8 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(unsafeSuperSolution string) (s
 	return result, err
 }
 
-func (gen *IdeaGenerator) GetWordPoolBySuperSolution(unsafeSuperSolution string) ([]string, error) {
+func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]string, error) {
+	unsafeSuperSolution := makeWordUnsafe(superSolution)
 	prompt := `
 		Nenne mir etwa 10-30 Unterbegriffe zum Thema ` + unsafeSuperSolution + ` nach diesen Regeln:
 
@@ -110,7 +120,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(unsafeSuperSolution string)
 		Beispielformat (für das Thema "Automarken"):
 		["Volkswagen","Toyota","Ford", ...]
 		`
-	result, err := gen.reasoningRequest(prompt, "o3", "high")
+	result, err := gen.reasoningRequest(prompt, "o4-mini", "high")
 	if err != nil {
 		logrus.Error("Error getting word pool")
 		return nil, err
