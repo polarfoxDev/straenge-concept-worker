@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func generateConcepts(generator *ai.IdeaGenerator) *[]models.RiddleConcept {
+func generateConcepts(generator *ai.IdeaGenerator, predefinedSuperSolutions []string) *[]models.RiddleConcept {
 	concepts := make([]models.RiddleConcept, 0)
 	logrus.Info("Generating super solutions...")
 	superSolutions, err := generator.GetSuperSolutions()
@@ -18,6 +18,12 @@ func generateConcepts(generator *ai.IdeaGenerator) *[]models.RiddleConcept {
 	}
 
 	logrus.Infof("Generated %d super solutions", len(superSolutions))
+
+	// If there are predefined super solutions, prepend them
+	if len(predefinedSuperSolutions) > 0 {
+		logrus.Infof("Using predefined super solutions: %v", predefinedSuperSolutions)
+		superSolutions = append(predefinedSuperSolutions, superSolutions...)
+	}
 
 	for _, superSolution := range superSolutions {
 		logrus.Info("Generating theme for super solution: " + superSolution)
