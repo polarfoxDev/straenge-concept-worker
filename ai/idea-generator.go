@@ -99,7 +99,7 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string,
 		- Musikinstrumente -> Klangquellen
 		- Süßwasserfische -> Am Haken!
 		`
-	result, err := gen.fastRequest(prompt, "gpt-4o")
+	result, err := gen.fastRequest(prompt, "gpt-4.1")
 	logrus.Debug("raw gpt result: " + result)
 	return result, err
 }
