@@ -64,7 +64,10 @@ func main() {
 	if success {
 		// PREDEFINED_SUPER_SOLUTIONS is a comma-separated list, so we split it
 		for _, solution := range strings.Split(predefinedSuperSolutionsRaw, ",") {
-			predefinedSuperSolutions = append(predefinedSuperSolutions, strings.TrimSpace(solution))
+			trimmedSolution := strings.TrimSpace(solution)
+			if trimmedSolution != "" {
+				predefinedSuperSolutions = append(predefinedSuperSolutions, trimmedSolution)
+			}
 		}
 		logrus.Infof("Using predefined super solutions: %v", predefinedSuperSolutions)
 	} else {
