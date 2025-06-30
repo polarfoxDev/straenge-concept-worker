@@ -59,6 +59,20 @@ func main() {
 	client = redis.NewClient(&redis.Options{
 		Addr: redisUrl,
 	})
+	predefinedSuperSolutions := make([]string, 0)
+	predefinedSuperSolutionsRaw, success := os.LookupEnv("PREDEFINED_SUPER_SOLUTIONS")
+	if success {
+		// PREDEFINED_SUPER_SOLUTIONS is a comma-separated list, so we split it
+		for _, solution := range strings.Split(predefinedSuperSolutionsRaw, ",") {
+			trimmedSolution := strings.TrimSpace(solution)
+			if trimmedSolution != "" {
+				predefinedSuperSolutions = append(predefinedSuperSolutions, trimmedSolution)
+			}
+		}
+		logrus.Infof("Using predefined super solutions: %v", predefinedSuperSolutions)
+	} else {
+		logrus.Info("No predefined super solutions found, using empty list")
+	}
 
 	generator := ai.IdeaGenerator{}
 	generator.Login(apiKey)
@@ -76,7 +90,14 @@ func main() {
 
 		if len < threshold {
 			logrus.Infof("⚠️ queue only has %d elements – filling...", len)
-			concepts := generateConcepts(&generator)
+			concepts := generateConcepts(&generator, predefinedSuperSolutions)
+			// Check if concepts is nil to prevent nil-pointer panic
+			if concepts == nil {
+				logrus.Error("❌ generateConcepts returned nil, skipping this iteration")
+				continue
+			}
+			// empty predefinedSuperSolutions after single use
+			predefinedSuperSolutions = make([]string, 0)
 			for i, concept := range *concepts {
 				conceptJson, err := json.Marshal(concept)
 				if err != nil {
