@@ -88,6 +88,11 @@ func main() {
 		if len < threshold {
 			logrus.Infof("⚠️ queue only has %d elements – filling...", len)
 			concepts := generateConcepts(&generator, predefinedSuperSolutions)
+			// Check if concepts is nil to prevent nil-pointer panic
+			if concepts == nil {
+				logrus.Error("❌ generateConcepts returned nil, skipping this iteration")
+				continue
+			}
 			// empty predefinedSuperSolutions after single use
 			predefinedSuperSolutions = make([]string, 0)
 			for i, concept := range *concepts {
