@@ -21,7 +21,7 @@ jobs:
       - name: Build and Publish Docker Image
         run: |
           docker buildx build . \
-            --platform linux/arm64 \
+            --platform linux/amd64,linux/arm64 \
             --tag ghcr.io/polarfoxdev/straenge-concept-worker:latest \
             --tag ghcr.io/polarfoxdev/straenge-concept-worker:${{ github.sha }} \
             --push
