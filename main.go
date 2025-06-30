@@ -63,7 +63,9 @@ func main() {
 	predefinedSuperSolutionsRaw, success := os.LookupEnv("PREDEFINED_SUPER_SOLUTIONS")
 	if success {
 		// PREDEFINED_SUPER_SOLUTIONS is a comma-separated list, so we split it
-		predefinedSuperSolutions = append(predefinedSuperSolutions, strings.Split(predefinedSuperSolutionsRaw, ",")...)
+		for _, solution := range strings.Split(predefinedSuperSolutionsRaw, ",") {
+			predefinedSuperSolutions = append(predefinedSuperSolutions, strings.TrimSpace(solution))
+		}
 		logrus.Infof("Using predefined super solutions: %v", predefinedSuperSolutions)
 	} else {
 		logrus.Info("No predefined super solutions found, using empty list")
