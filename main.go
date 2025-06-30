@@ -6,6 +6,7 @@ import (
 	"os"
 	"straenge-concept-worker/m/ai"
 	"straenge-concept-worker/m/models"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
