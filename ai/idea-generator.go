@@ -143,7 +143,7 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string,
 func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]string, error) {
 	unsafeSuperSolution := makeWordUnsafe(superSolution)
 	promptDE := `
-		Nenne 10–30 Unterbegriffe zum Thema + unsafeSuperSolution +.
+		Nenne 10–30 Unterbegriffe zum Thema + ` + unsafeSuperSolution + ` +.
 		Regeln:
 		1. Überwiegend geläufige Begriffe, die eine Durchschnittsperson kennt.
 		2. Ausnahmen: Bei Themen wie Automarken oder Programmiersprachen sind bekannte Marken- oder Fremdwörter erlaubt.
@@ -156,7 +156,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
 		["Volkswagen","Toyota","Ford", ...]
 	`
 	promptSV := `
-		Nämn 10–30 underbegrepp till temat + unsafeSuperSolution +.
+		Nämn 10–30 underbegrepp till temat + ` + unsafeSuperSolution + ` +.
 		Regler:
 		1. Mest vanliga begrepp som en genomsnittsperson känner till.
 		2. Undantag: För teman som Bilmärken eller Programmeringsspråk är kända varumärken eller utländska ord tillåtna.
