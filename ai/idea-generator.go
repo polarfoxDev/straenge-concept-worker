@@ -17,7 +17,7 @@ const (
 	apiEndpoint = "https://api.openai.com/v1/chat/completions"
 )
 
-var specialCharacterMap = []string{"Ä", "Ö", "Ü", "ẞ"}
+var specialCharacterMap = []string{"Ä", "Ö", "Ü", "ẞ", "Å", "É", ":"}
 
 func makeWordSafe(word string) string {
 	word = strings.ToUpper(word)
