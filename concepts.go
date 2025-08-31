@@ -6,23 +6,22 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
-
 func generateConcepts(generator *ai.IdeaGenerator, predefinedSuperSolutions []string) *[]models.RiddleConcept {
 	concepts := make([]models.RiddleConcept, 0)
-	logrus.Info("Generating super solutions...")
-	superSolutions, err := generator.GetSuperSolutions()
 
-	if err != nil {
-		logrus.Error("Error getting super solutions:", err)
-		return nil
-	}
-
-	logrus.Infof("Generated %d super solutions", len(superSolutions))
-
-	// If there are predefined super solutions, prepend them
+	var superSolutions []string
 	if len(predefinedSuperSolutions) > 0 {
 		logrus.Infof("Using predefined super solutions: %v", predefinedSuperSolutions)
-		superSolutions = append(predefinedSuperSolutions, superSolutions...)
+		superSolutions = predefinedSuperSolutions
+	} else {
+		logrus.Info("Generating super solutions...")
+		var err error
+		superSolutions, err = generator.GetSuperSolutions()
+		if err != nil {
+			logrus.Error("Error getting super solutions:", err)
+			return nil
+		}
+		logrus.Infof("Generated %d super solutions", len(superSolutions))
 	}
 
 	for _, superSolution := range superSolutions {
