@@ -52,6 +52,17 @@ func main() {
 		logrus.Fatal("REDIS_URL not set")
 		return
 	}
+	lang, success := os.LookupEnv("LANGUAGE")
+	if !success {
+		logrus.Fatal("LANGUAGE not set")
+		return
+	}
+	lang = strings.TrimSpace(lang)
+	supportedLangs := []string{"de", "sv"}
+	if !contains(supportedLangs, lang) {
+		logrus.Fatalf("Language '%s' is not supported", lang)
+		return
+	}
 	apiKey, success := os.LookupEnv("OPENAI_API_KEY")
 	if !success {
 		logrus.Fatal("OPENAI_API_KEY not set")
@@ -77,6 +88,7 @@ func main() {
 
 	generator := ai.IdeaGenerator{}
 	generator.Login(apiKey)
+	generator.SetLanguage(lang)
 
 	logrus.Info("Started worker...")
 

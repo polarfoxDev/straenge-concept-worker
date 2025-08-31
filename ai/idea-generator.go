@@ -39,27 +39,47 @@ func makeWordUnsafe(word string) string {
 
 type IdeaGenerator struct {
 	openAiApiKey string
+	language     string
 }
 
 func (gen *IdeaGenerator) Login(apiKey string) {
 	gen.openAiApiKey = apiKey
 }
 
-func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
-	prompt := `
-		Erstelle mindestens 40 Oberbegriffe (Kategorien) nach folgenden Regeln:
+func (gen *IdeaGenerator) SetLanguage(lang string) {
+	gen.language = lang
+}
 
-		1. Jeder Begriff besteht aus genau einem Wort (Komposita wie "Weltmusik" sind erlaubt).
-		2. Die Begriffe dürfen sich inhaltlich nicht überschneiden.
-		3. Die Begriffe müssen mindestens 6 und höchstens 30 Zeichen lang sein.
-		4. Verwende keinerlei Wörter aus der unten stehenden Blacklist.
-		5. Wähle überwiegend allgemeinere Kategorien, füge aber auch speziellere Kategorien hinzu (z. B. "SpanischeKüche", "Süßwasserfische", "Deutschrap" oder ein bestimmter Film).
-		6. Überrasche mich mit mindestens 2 ungewöhnlichen oder schrulligen Kategorien.
-		7. Gib ausschließlich ein gültiges JSON-Array in einer Zeile zurück, ohne sonstigen Text. Verzichte auch auf einen Codeblock.
-                8. Die Kategorien sollten allgemein bekannte Begriffe sein, die sich für ein Rätsel eignen, bei dem später passende Unterbegriffe gesucht werden. KEINE WORTNEUSCHÖPFUNGEN!
-		
-		Beispiele (Blacklist): FRÜCHTE, GEMÜSE, MUSIKINSTRUMENTE, OSTERN, KANINCHEN, COMPUTER, ARCHITEKTUR, PHILOSOPHIE, KÜCHENGERÄTE, GAMEOFTHRONES, FISCHARTEN, PROGRAMMIERSPRACHEN, AUTOMARKEN, DEUTSCHRAP, SPANISCHEKÜCHE, WELTMUSIK`
-	result, err := gen.reasoningRequest(prompt, "o4-mini", "high")
+func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
+	promptDE := `
+		Erstelle mindestens 40 Kategorien als JSON-Array (eine Zeile, keine Zusätze). Regeln:
+		1. genau ein Wort pro Kategorie (Komposita erlaubt),
+		2. keine inhaltlichen Überschneidungen,
+		3. Länge 6–30 Zeichen,
+		4. keine Wörter aus der Blacklist,
+		5. überwiegend allgemein, aber auch spezielle Begriffe (z. B. SpanischeKüche, Süßwasserfische, Deutschrap, bestimmter Film),
+		6. mindestens 2 ungewöhnliche/kuriose Kategorien,
+		7. nur allgemein bekannte Begriffe, keine Neuschöpfungen.
+		Beispiele (Blacklist): Früchte, Gemüse, Musikinstrumente, Ostern, Kaninchen, Computer, Architektur, Philosophie, Küchengeräte, GameOfThrones, Fischarten, Programmiersprachen, Automarken, Deutschrap, SpanischeKüche, Weltmusik
+	`
+	promptSV := `
+		Skapa minst 40 kategorier som en JSON-array (en rad, inga tillägg). Regler:
+		1. exakt ett ord per kategori (sammansättningar tillåtna),
+		2. inga innehållsliga överlapp,
+		3. längd 6–30 tecken,
+		4. inga ord från svartlistan,
+		5. mest allmänna men även specifika begrepp (t.ex. SpanskMat, Sötvattensfiskar, TyskRap, en viss film),
+		6. minst 2 ovanliga/knasiga kategorier,
+		7. endast allmänt kända begrepp, inga nyskapade ord.
+		Exempel (svartlista): frukter, grönsaker, musikinstrument, kaniner, datorer, arkitektur, filosofi, köksredskap, GameOfThrones, fiskarter, programmeringsspråk, bilmärken, tyskrap, spanskmat, världsmusik
+	`
+	var prompt string
+	if gen.language == "de" {
+		prompt = promptDE
+	} else {
+		prompt = promptSV
+	}
+	result, err := gen.reasoningRequest(prompt, "gpt-5", "high")
 	if err != nil {
 		logrus.Error("Error getting super solutions")
 		return nil, err
@@ -85,42 +105,76 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 
 func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string, error) {
 	unsafeSuperSolution := makeWordUnsafe(superSolution)
-	prompt := `
+	promptDE := `
 		Formuliere eine rätselhafte Kurzbeschreibung zum Oberbegriff ` + unsafeSuperSolution + `.
-		
 		Regeln:
-		1. Länge: höchstens 4 Wörter oder 30 Zeichen.
-		2. Keine direkten Wortteile, Wortstämme oder Synonyme des Oberbegriffs.
-		3. Deutsch, gern metaphorisch oder als Wortspiel.
-		4. Man soll ein wenig knobeln müssen, um den Oberbegriff zu erraten.
-		5. Gib ausschließlich diese Beschreibung in einer Zeile zurück - ohne Anführungszeichen, Zusatztext oder Formatierung.
-		
-		Beispiele
+		1. Maximal 4 Wörter oder 30 Zeichen.
+		2. Keine Wortteile, Wortstämme oder Synonyme des Oberbegriffs.
+		3. Auf Deutsch, gern metaphorisch oder als Wortspiel.
+		4. Sie soll zum Knobeln anregen.
+		5. Gib nur die Beschreibung zurück – eine Zeile, ohne Anführungszeichen oder Zusatztext.
+		Beispiele:
 		- Musikinstrumente -> Klangquellen
 		- Süßwasserfische -> Am Haken!
-		`
-	result, err := gen.fastRequest(prompt, "gpt-4.1")
+	`
+	promptSV := `
+		Formulera en gåtfull kort beskrivning av överbegreppet ` + unsafeSuperSolution + `.
+		Regler:
+		1. Maximal 4 ord eller 30 tecken.
+		2. Inga orddelar, ordstammar eller synonymer till överbegreppet.
+		3. På svenska, gärna metaforiskt eller som ett ordspel.
+		4. Den ska få en att klura.
+		5. Ge endast beskrivningen - en rad, utan citattecken eller tilläggstext.
+		Exempel:
+		- Musikinstrument -> Ljudkällor
+		- Sötvattensfiskar -> På kroken!
+	`
+	var prompt string
+	if gen.language == "de" {
+		prompt = promptDE
+	} else {
+		prompt = promptSV
+	}
+	result, err := gen.fastRequest(prompt, "gpt-5-chat-latest")
 	logrus.Debug("raw gpt result: " + result)
 	return result, err
 }
 
 func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]string, error) {
 	unsafeSuperSolution := makeWordUnsafe(superSolution)
-	prompt := `
-		Nenne mir etwa 10-30 Unterbegriffe zum Thema ` + unsafeSuperSolution + ` nach diesen Regeln:
-
-		1. Nutze überwiegend geläufige Begriffe, die eine Durchschnittsperson kennt.
-		2. **Ausnahmen**: Wenn das Thema es erfordert (z. B. "Automarken", "Programmiersprachen"), sind bekannte Markennamen oder nicht-deutsche Wörter ausdrücklich erlaubt.
-		3. Meistens soll jeder Begriff aus einem Wort bestehen (Komposita erlaubt); einige wenige dürfen aus höchstens drei Wörtern bestehen.
-		4. Begriffe dürfen sich ähneln, aber nicht identisch sein; vermeide unnötige Wiederholungen.
-		5. Gib ausschließlich ein gültiges JSON-Array in einer Zeile zurück - ohne einleitenden oder nachfolgenden Text. Verzichte auch auf einen Codeblock.
-		6. Qualität vor Quantität: Wenn du nur 10-15 Begriffe kennst, die allgemein verständlich und relevant sind, ist das auch in Ordnung.
-		7. Bevorzuge kurze Begriffe (4-8 Zeichen) soweit möglich.
-
-		Beispielformat (für das Thema "Automarken"):
+	promptDE := `
+		Nenne 10–30 Unterbegriffe zum Thema + unsafeSuperSolution +.
+		Regeln:
+		1. Überwiegend geläufige Begriffe, die eine Durchschnittsperson kennt.
+		2. Ausnahmen: Bei Themen wie Automarken oder Programmiersprachen sind bekannte Marken- oder Fremdwörter erlaubt.
+		3. Meist ein Wort (Komposita erlaubt); wenige Ausnahmen mit max. 3 Wörtern.
+		4. Begriffe dürfen ähnlich, aber nicht identisch sein; Wiederholungen vermeiden.
+		5. Gib nur ein gültiges JSON-Array in einer Zeile zurück – ohne Zusatztext oder Codeblock.
+		6. Qualität vor Quantität: 10–15 gute Begriffe sind ausreichend, wenn mehr nicht sinnvoll sind.
+		7. Bevorzuge kurze Begriffe (4–8 Zeichen), wenn möglich.
+		Beispiel (Thema „Automarken“):
 		["Volkswagen","Toyota","Ford", ...]
-		`
-	result, err := gen.reasoningRequest(prompt, "o4-mini", "high")
+	`
+	promptSV := `
+		Nämn 10–30 underbegrepp till temat + unsafeSuperSolution +.
+		Regler:
+		1. Mest vanliga begrepp som en genomsnittsperson känner till.
+		2. Undantag: För teman som Bilmärken eller Programmeringsspråk är kända varumärken eller utländska ord tillåtna.
+		3. Vanligen ett ord (sammansättningar tillåtna); några få får ha högst 3 ord.
+		4. Begrepp får vara liknande men inte identiska; undvik onödiga upprepningar.
+		5. Ge endast en giltig JSON-array på en rad – utan extra text eller kodblock.
+		6. Kvalitet före kvantitet: 10–15 bra begrepp räcker om fler inte är rimliga.
+		7. Föredra korta begrepp (4–8 tecken) när det är möjligt.
+		Exempel (tema ”Bilmärken”):
+		["Volkswagen","Toyota","Ford", ...]
+	`
+	var prompt string
+	if gen.language == "de" {
+		prompt = promptDE
+	} else {
+		prompt = promptSV
+	}
+	result, err := gen.reasoningRequest(prompt, "gpt-5", "high")
 	if err != nil {
 		logrus.Error("Error getting word pool")
 		return nil, err
