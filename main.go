@@ -24,6 +24,15 @@ const (
 	checkInterval = 5 * time.Second
 )
 
+func contains(slice []string, s string) bool {
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
 func init() {
 	// read dotenv file
 	err := godotenv.Load()
