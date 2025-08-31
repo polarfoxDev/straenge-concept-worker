@@ -79,7 +79,7 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 	} else {
 		prompt = promptSV
 	}
-	result, err := gen.reasoningRequest(prompt, "gpt-5", "high")
+	result, err := gen.reasoningRequest(prompt, "gpt-5", "medium")
 	if err != nil {
 		logrus.Error("Error getting super solutions")
 		return nil, err
@@ -174,7 +174,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
 	} else {
 		prompt = promptSV
 	}
-	result, err := gen.reasoningRequest(prompt, "gpt-5", "high")
+	result, err := gen.reasoningRequest(prompt, "gpt-5", "medium")
 	if err != nil {
 		logrus.Error("Error getting word pool")
 		return nil, err
@@ -217,7 +217,7 @@ func (gen *IdeaGenerator) fastRequest(query string, model string) (string, error
 
 func (gen *IdeaGenerator) rawRequest(body map[string]any) (string, error) {
 	logrus.Debug("raw gpt request: " + string(body["messages"].([]any)[0].(map[string]any)["content"].(string)))
-	client := resty.New().SetTimeout(time.Duration(5 * time.Minute))
+	client := resty.New().SetTimeout(time.Duration(10 * time.Minute))
 
 	response, err := client.R().
 		SetAuthToken(gen.openAiApiKey).
