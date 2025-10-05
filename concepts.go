@@ -6,8 +6,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
-func generateConcepts(generator *ai.IdeaGenerator, predefinedSuperSolutions []string) *[]models.RiddleConcept {
-	concepts := make([]models.RiddleConcept, 0)
+
+func generateConcepts(
+	generator *ai.IdeaGenerator,
+	predefinedSuperSolutions []string,
+	enqueue func(models.RiddleConcept) error,
+) (int, error) {
+	conceptsEnqueued := 0
 
 	var superSolutions []string
 	if len(predefinedSuperSolutions) > 0 {
@@ -19,7 +24,7 @@ func generateConcepts(generator *ai.IdeaGenerator, predefinedSuperSolutions []st
 		superSolutions, err = generator.GetSuperSolutions()
 		if err != nil {
 			logrus.Error("Error getting super solutions:", err)
-			return nil
+			return 0, err
 		}
 		logrus.Infof("Generated %d super solutions", len(superSolutions))
 	}
@@ -46,8 +51,13 @@ func generateConcepts(generator *ai.IdeaGenerator, predefinedSuperSolutions []st
 			ThemeDescription: theme,
 			WordPool:         wordList,
 		}
-		concepts = append(concepts, concept)
+		if err := enqueue(concept); err != nil {
+			logrus.Errorf("Error enqueuing concept for super solution '%s': %v", superSolution, err)
+			continue
+		}
+		logrus.Infof("➕ Concept enqueued for super solution '%s'", superSolution)
+		conceptsEnqueued++
 	}
 
-	return &concepts
+	return conceptsEnqueued, nil
 }

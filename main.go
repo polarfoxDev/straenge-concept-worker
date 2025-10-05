@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"straenge-concept-worker/m/ai"
 	"straenge-concept-worker/m/models"
@@ -31,6 +32,25 @@ func contains(slice []string, s string) bool {
 		}
 	}
 	return false
+}
+
+func enqueueConcept(concept models.RiddleConcept) error {
+	conceptJson, err := json.Marshal(concept)
+	if err != nil {
+		return fmt.Errorf("marshal concept: %w", err)
+	}
+	job := models.Job{
+		Type:    "new",
+		Payload: string(conceptJson),
+	}
+	data, err := json.Marshal(job)
+	if err != nil {
+		return fmt.Errorf("marshal job: %w", err)
+	}
+	if err := client.LPush(ctx, "generate-riddle", data).Err(); err != nil {
+		return fmt.Errorf("insert job: %w", err)
+	}
+	return nil
 }
 
 func init() {
@@ -112,34 +132,16 @@ func main() {
 
 		if len < threshold {
 			logrus.Infof("⚠️ queue only has %d elements – filling...", len)
-			concepts := generateConcepts(&generator, predefinedSuperSolutions)
-			// Check if concepts is nil to prevent nil-pointer panic
-			if concepts == nil {
-				logrus.Error("❌ generateConcepts returned nil, skipping this iteration")
+			count, err := generateConcepts(&generator, predefinedSuperSolutions, enqueueConcept)
+			if err != nil {
+				logrus.Error("❌ generateConcepts failed: ", err)
+				time.Sleep(30 * time.Second)
 				continue
 			}
 			// empty predefinedSuperSolutions after single use
 			predefinedSuperSolutions = make([]string, 0)
-			for i, concept := range *concepts {
-				conceptJson, err := json.Marshal(concept)
-				if err != nil {
-					logrus.Errorf("❌ Error marshalling JSON: %v", err)
-					continue
-				}
-				job := models.Job{
-					Type:    "new",
-					Payload: string(conceptJson),
-				}
-				data, err := json.Marshal(job)
-				if err != nil {
-					logrus.Errorf("❌ Error marshalling JSON: %v", err)
-					continue
-				}
-				if err := client.LPush(ctx, "generate-riddle", data).Err(); err != nil {
-					logrus.Errorf("❌ Error inserting job: %v", err)
-				} else {
-					logrus.Infof("➕ New job added (%d)", i+1)
-				}
+			if count == 0 {
+				logrus.Warn("⚠️ No concepts enqueued during this iteration")
 			}
 		} else {
 			logrus.Infof("✅ queue is filled (%d jobs)", len)
