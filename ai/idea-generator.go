@@ -3,7 +3,6 @@ package ai
 import (
 	"encoding/json"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -17,23 +16,11 @@ const (
 	apiEndpoint = "https://api.openai.com/v1/chat/completions"
 )
 
-var specialCharacterMap = []string{"Ä", "Ö", "Ü", "ẞ", "Å", "É", ":"}
-
 func makeWordSafe(word string) string {
 	word = strings.ToUpper(word)
 	word = strings.ReplaceAll(word, " ", "")
 	word = strings.ReplaceAll(word, "-", "")
 	word = strings.ReplaceAll(word, "ß", "ẞ")
-	for i, specialCharacter := range specialCharacterMap {
-		word = strings.ReplaceAll(word, specialCharacter, strconv.Itoa(i))
-	}
-	return word
-}
-
-func makeWordUnsafe(word string) string {
-	for i, specialCharacter := range specialCharacterMap {
-		word = strings.ReplaceAll(word, strconv.Itoa(i), specialCharacter)
-	}
 	return word
 }
 
@@ -104,9 +91,8 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 }
 
 func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string, error) {
-	unsafeSuperSolution := makeWordUnsafe(superSolution)
 	promptDE := `
-		Formuliere eine rätselhafte Kurzbeschreibung zum Oberbegriff ` + unsafeSuperSolution + `.
+		Formuliere eine rätselhafte Kurzbeschreibung zum Oberbegriff ` + superSolution + `.
 		Regeln:
 		1. Maximal 4 Wörter oder 30 Zeichen.
 		2. Keine Wortteile, Wortstämme oder Synonyme des Oberbegriffs.
@@ -118,7 +104,7 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string,
 		- Süßwasserfische -> Am Haken!
 	`
 	promptSV := `
-		Formulera en gåtfull kort beskrivning av överbegreppet ` + unsafeSuperSolution + `.
+		Formulera en gåtfull kort beskrivning av överbegreppet ` + superSolution + `.
 		Regler:
 		1. Maximal 4 ord eller 30 tecken.
 		2. Inga orddelar, ordstammar eller synonymer till överbegreppet.
@@ -141,9 +127,8 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string,
 }
 
 func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]string, error) {
-	unsafeSuperSolution := makeWordUnsafe(superSolution)
 	promptDE := `
-		Nenne 10–30 Unterbegriffe zum Thema + ` + unsafeSuperSolution + ` +.
+		Nenne 10–30 Unterbegriffe zum Thema + ` + superSolution + ` +.
 		Regeln:
 		1. Überwiegend geläufige Begriffe, die eine Durchschnittsperson kennt.
 		2. Ausnahmen: Bei Themen wie Automarken oder Programmiersprachen sind bekannte Marken- oder Fremdwörter erlaubt.
@@ -156,7 +141,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
 		["Volkswagen","Toyota","Ford", ...]
 	`
 	promptSV := `
-		Nämn 10–30 underbegrepp till temat + ` + unsafeSuperSolution + ` +.
+		Nämn 10–30 underbegrepp till temat + ` + superSolution + ` +.
 		Regler:
 		1. Mest vanliga begrepp som en genomsnittsperson känner till.
 		2. Undantag: För teman som Bilmärken eller Programmeringsspråk är kända varumärken eller utländska ord tillåtna.
