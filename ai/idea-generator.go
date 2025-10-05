@@ -70,7 +70,7 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 	} else {
 		prompt = promptSV
 	}
-	result, err := gen.reasoningRequest(prompt, "gpt-5", "medium")
+	result, err := gen.reasoningRequest(prompt, "gpt-5", "medium", "super-solutions-v1-"+gen.language)
 	if err != nil {
 		logrus.Error("Error getting super solutions")
 		return nil, err
@@ -127,7 +127,7 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string,
 	} else {
 		prompt = promptSV
 	}
-	result, err := gen.fastRequest(prompt, "gpt-5-chat-latest")
+	result, err := gen.fastRequest(prompt, "gpt-5-chat-latest", "theme-v1-"+gen.language)
 	logrus.Debug("raw gpt result: " + result)
 	return result, err
 }
@@ -167,7 +167,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
 	} else {
 		prompt = promptSV
 	}
-	result, err := gen.reasoningRequest(prompt, "gpt-5", "medium")
+	result, err := gen.reasoningRequest(prompt, "gpt-5", "medium", "word-pool-v1-"+gen.language)
 	if err != nil {
 		logrus.Error("Error getting word pool")
 		return nil, err
@@ -191,19 +191,21 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
 	return allowedItems, err
 }
 
-func (gen *IdeaGenerator) reasoningRequest(query string, model string, effort string) (string, error) {
+func (gen *IdeaGenerator) reasoningRequest(query string, model string, effort string, cacheKey string) (string, error) {
 	body := map[string]any{
 		"model":            model,
 		"reasoning_effort": effort,
 		"messages":         []any{map[string]any{"role": "system", "content": query}},
+		"prompt_cache_key": cacheKey,
 	}
 	return gen.rawRequest(body)
 }
 
-func (gen *IdeaGenerator) fastRequest(query string, model string) (string, error) {
+func (gen *IdeaGenerator) fastRequest(query string, model string, cacheKey string) (string, error) {
 	body := map[string]any{
-		"model":    model,
-		"messages": []any{map[string]any{"role": "user", "content": query}},
+		"model":            model,
+		"messages":         []any{map[string]any{"role": "user", "content": query}},
+		"prompt_cache_key": cacheKey,
 	}
 	return gen.rawRequest(body)
 }
