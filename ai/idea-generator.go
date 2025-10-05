@@ -39,26 +39,30 @@ func (gen *IdeaGenerator) SetLanguage(lang string) {
 
 func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 	promptDE := `
-		Erstelle mindestens 40 Kategorien als JSON-Array (eine Zeile, keine Zusätze). Regeln:
-		1. genau ein Wort pro Kategorie (Komposita erlaubt),
-		2. keine inhaltlichen Überschneidungen,
-		3. Länge 6–30 Zeichen,
-		4. keine Wörter aus der Blacklist,
-		5. überwiegend allgemein, aber auch spezielle Begriffe (z. B. SpanischeKüche, Süßwasserfische, Deutschrap, bestimmter Film),
-		6. mindestens 2 ungewöhnliche/kuriose Kategorien,
-		7. nur allgemein bekannte Begriffe, keine Neuschöpfungen.
-		Beispiele (Blacklist): Früchte, Gemüse, Musikinstrumente, Ostern, Kaninchen, Computer, Architektur, Philosophie, Küchengeräte, GameOfThrones, Fischarten, Programmiersprachen, Automarken, Deutschrap, SpanischeKüche, Weltmusik
+		Erstelle 40 Kategorieren, die sich als Oberbegriffe eignen. Regeln:
+        1. genau ein Wort pro Kategorie (Komposita erlaubt),
+        2. keine inhaltlichen Überschneidungen,
+        3. Länge 6–30 Zeichen,
+        4. keine Wörter aus der Blacklist,
+        5. überwiegend allgemein, aber auch spezielle Begriffe (z. B. "SpanischeKüche", "Süßwasserfische", "Deutschrap", "BieneMaja"),
+        6. wenige ungewöhnliche/kuriose Kategorien,
+        7. nur allgemein bekannte Begriffe, keine Neuschöpfungen.
+        Beispiele (Blacklist): Früchte, Gemüse, Musikinstrumente, Ostern, Kaninchen, Computer, Architektur, Philosophie, Küchengeräte, GameOfThrones, Fischarten, Programmiersprachen, Automarken, Deutschrap, SpanischeKüche, Weltmusik
+
+     	Gib nur eine komma-separierte Liste in einer Zeile zurück – ohne Zusatztext oder Codeblock.
 	`
 	promptSV := `
-		Skapa minst 40 kategorier som en JSON-array (en rad, inga tillägg). Regler:
-		1. exakt ett ord per kategori (sammansättningar tillåtna),
-		2. inga innehållsliga överlapp,
-		3. längd 6–30 tecken,
-		4. inga ord från svartlistan,
-		5. mest allmänna men även specifika begrepp (t.ex. SpanskMat, Sötvattensfiskar, TyskRap, en viss film),
-		6. minst 2 ovanliga/knasiga kategorier,
-		7. endast allmänt kända begrepp, inga nyskapade ord.
+      	Skapa 40 kategorier som fungerar som överordnade begrepp. Regler:
+        1. exakt ett ord per kategori (sammansättningar tillåtna),
+        2. inga innehållsliga överlapp,
+        3. längd 6–30 tecken,
+        4. inga ord från svartlistan,
+        5. mest allmänna men även specifika begrepp (t.ex. "spanskmat", "sötvattensfiskar", "rapmusik", "midsommar"),
+        6. några ovanliga/knasiga kategorier,
+        7. endast allmänt kända begrepp, inga nyskapade ord.
 		Exempel (svartlista): frukter, grönsaker, musikinstrument, kaniner, datorer, arkitektur, filosofi, köksredskap, GameOfThrones, fiskarter, programmeringsspråk, bilmärken, tyskrap, spanskmat, världsmusik
+	
+      	Returnera endast en kommaseparerad lista på en rad – utan extra text eller kodblock.
 	`
 	var prompt string
 	if gen.language == "de" {
@@ -92,29 +96,31 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
 
 func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string, error) {
 	promptDE := `
-		Formuliere eine rätselhafte Kurzbeschreibung zum Oberbegriff ` + superSolution + `.
-		Regeln:
-		1. Maximal 4 Wörter oder 30 Zeichen.
-		2. Keine Wortteile, Wortstämme oder Synonyme des Oberbegriffs.
-		3. Auf Deutsch, gern metaphorisch oder als Wortspiel.
-		4. Sie soll zum Knobeln anregen.
-		5. Gib nur die Beschreibung zurück – eine Zeile, ohne Anführungszeichen oder Zusatztext.
-		Beispiele:
-		- Musikinstrumente -> Klangquellen
-		- Süßwasserfische -> Am Haken!
-	`
+		Formuliere eine rätselhafte Kurzbeschreibung zum einem Oberbegriff.
+      	Regeln:
+          1. Maximal 4 Wörter oder 30 Zeichen.
+          2. Keine Wortteile, Wortstämme oder Synonyme des Oberbegriffs.
+          3. Auf Deutsch, gern metaphorisch oder als Wortspiel.
+          4. Sie soll zum Knobeln anregen.
+          5. Gib nur die Beschreibung zurück – eine Zeile, ohne Anführungszeichen oder Zusatztext.
+      	Beispiele:
+          - Musikinstrumente -> Klangquellen
+          - Süßwasserfische -> Am Haken!
+		
+		Der Oberbegriff lautet: ` + superSolution
 	promptSV := `
-		Formulera en gåtfull kort beskrivning av överbegreppet ` + superSolution + `.
-		Regler:
-		1. Maximal 4 ord eller 30 tecken.
-		2. Inga orddelar, ordstammar eller synonymer till överbegreppet.
-		3. På svenska, gärna metaforiskt eller som ett ordspel.
-		4. Den ska få en att klura.
-		5. Ge endast beskrivningen - en rad, utan citattecken eller tilläggstext.
-		Exempel:
-		- Musikinstrument -> Ljudkällor
-		- Sötvattensfiskar -> På kroken!
-	`
+		Formulera en gåtfull kort beskrivning av ett överbegrepp.
+      	Regler:
+          1. Maximal 4 ord eller 30 tecken.
+          2. Inga orddelar, ordstammar eller synonymer till överbegreppet.
+          3. På svenska, gärna metaforiskt eller som ett ordspel.
+          4. Den ska få en att klura.
+          5. Ge endast beskrivningen - en rad, utan citattecken eller tilläggstext.
+      	Exempel:
+          - Musikinstrument -> Ljudkällor
+          - Sötvattensfiskar -> På kroken!
+		
+		Överbegreppet är: ` + superSolution
 	var prompt string
 	if gen.language == "de" {
 		prompt = promptDE
@@ -128,31 +134,33 @@ func (gen *IdeaGenerator) GetThemeBySuperSolution(superSolution string) (string,
 
 func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]string, error) {
 	promptDE := `
-		Nenne 10–30 Unterbegriffe zum Thema + ` + superSolution + ` +.
-		Regeln:
-		1. Überwiegend geläufige Begriffe, die eine Durchschnittsperson kennt.
-		2. Ausnahmen: Bei Themen wie Automarken oder Programmiersprachen sind bekannte Marken- oder Fremdwörter erlaubt.
-		3. Meist ein Wort (Komposita erlaubt); wenige Ausnahmen mit max. 3 Wörtern.
-		4. Begriffe dürfen ähnlich, aber nicht identisch sein; Wiederholungen vermeiden.
-		5. Gib nur ein gültiges JSON-Array in einer Zeile zurück – ohne Zusatztext oder Codeblock.
-		6. Qualität vor Quantität: 10–15 gute Begriffe sind ausreichend, wenn mehr nicht sinnvoll sind.
-		7. Bevorzuge kurze Begriffe (4–8 Zeichen), wenn möglich.
-		Beispiel (Thema „Automarken“):
-		["Volkswagen","Toyota","Ford", ...]
-	`
+		Nenne 10–30 Unterbegriffe zum einem Oberbegriff.
+      	Regeln:
+          1. Überwiegend geläufige Begriffe, die eine Durchschnittsperson kennt.
+          2. Ausnahmen: Bei Themen wie Automarken oder Programmiersprachen sind bekannte Marken- oder Fremdwörter erlaubt.
+          3. Meist ein Wort (Komposita erlaubt); wenige Ausnahmen mit max. 3 Wörtern.
+          4. Begriffe dürfen ähnlich, aber nicht identisch sein; Wiederholungen vermeiden.
+          5. Gib nur eine komma-separierte Liste in einer Zeile zurück – ohne Zusatztext oder Codeblock.
+          6. Qualität vor Quantität: 10–15 gute Begriffe sind ausreichend, wenn mehr nicht sinnvoll sind.
+          7. Bevorzuge kurze Begriffe (4–8 Zeichen), wenn möglich.
+      	Beispiel (Oberbegriff „Automarken“):
+          Volkswagen, Toyota, Ford, ...
+		
+		Der Oberbegriff lautet: ` + superSolution
 	promptSV := `
-		Nämn 10–30 underbegrepp till temat + ` + superSolution + ` +.
-		Regler:
-		1. Mest vanliga begrepp som en genomsnittsperson känner till.
-		2. Undantag: För teman som Bilmärken eller Programmeringsspråk är kända varumärken eller utländska ord tillåtna.
-		3. Vanligen ett ord (sammansättningar tillåtna); några få får ha högst 3 ord.
-		4. Begrepp får vara liknande men inte identiska; undvik onödiga upprepningar.
-		5. Ge endast en giltig JSON-array på en rad – utan extra text eller kodblock.
-		6. Kvalitet före kvantitet: 10–15 bra begrepp räcker om fler inte är rimliga.
-		7. Föredra korta begrepp (4–8 tecken) när det är möjligt.
-		Exempel (tema ”Bilmärken”):
-		["Volkswagen","Toyota","Ford", ...]
-	`
+		Nämn 10–30 underbegrepp till ett överbegrepp.
+      	Regler:
+          1. Mest vanliga begrepp som en genomsnittsperson känner till.
+          2. Undantag: För teman som Bilmärken eller Programmeringsspråk är kända varumärken eller utländska ord tillåtna.
+          3. Vanligen ett ord (sammansättningar tillåtna); några få får ha högst 3 ord.
+          4. Begrepp får vara liknande men inte identiska; undvik onödiga upprepningar.
+          5. Returnera endast en kommaseparerad lista på en rad – utan extra text eller kodblock.
+          6. Kvalitet före kvantitet: 10–15 bra begrepp räcker om fler inte är rimliga.
+          7. Föredra korta begrepp (4–8 tecken) när det är möjligt.
+      	Exempel (överbegrepp ”Bilmärken”):
+          Volkswagen, Toyota, Ford, ...
+		
+    	Överbegreppet är: ` + superSolution
 	var prompt string
 	if gen.language == "de" {
 		prompt = promptDE
