@@ -48,8 +48,8 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
         6. wenige ungewöhnliche/kuriose Kategorien,
         7. nur allgemein bekannte Begriffe, keine Neuschöpfungen.
         Beispiele (Blacklist): Früchte, Gemüse, Musikinstrumente, Ostern, Kaninchen, Computer, Architektur, Philosophie, Küchengeräte, GameOfThrones, Fischarten, Programmiersprachen, Automarken, Deutschrap, SpanischeKüche, Weltmusik
-
-     	Gib nur eine komma-separierte Liste in einer Zeile zurück – ohne Zusatztext oder Codeblock.
+        
+		Gib nur ein gültiges JSON-Array in einer Zeile zurück – ohne Zusatztext oder Codeblock, z. B. ["Begriff1","Begriff2",...]
 	`
 	promptSV := `
       	Skapa 40 kategorier som fungerar som överordnade begrepp. Regler:
@@ -62,7 +62,7 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
         7. endast allmänt kända begrepp, inga nyskapade ord.
 		Exempel (svartlista): frukter, grönsaker, musikinstrument, kaniner, datorer, arkitektur, filosofi, köksredskap, GameOfThrones, fiskarter, programmeringsspråk, bilmärken, tyskrap, spanskmat, världsmusik
 	
-      	Returnera endast en kommaseparerad lista på en rad – utan extra text eller kodblock.
+      	Returnera endast en giltig JSON-array på en rad – utan extra text eller kodblock. t.ex. ["Begrepp1","Begrepp2",...]
 	`
 	var prompt string
 	if gen.language == "de" {
@@ -140,7 +140,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
           2. Ausnahmen: Bei Themen wie Automarken oder Programmiersprachen sind bekannte Marken- oder Fremdwörter erlaubt.
           3. Meist ein Wort (Komposita erlaubt); wenige Ausnahmen mit max. 3 Wörtern.
           4. Begriffe dürfen ähnlich, aber nicht identisch sein; Wiederholungen vermeiden.
-          5. Gib nur eine komma-separierte Liste in einer Zeile zurück – ohne Zusatztext oder Codeblock.
+          5. Gib nur ein gültiges JSON-Array in einer Zeile zurück – ohne Zusatztext oder Codeblock.
           6. Qualität vor Quantität: 10–15 gute Begriffe sind ausreichend, wenn mehr nicht sinnvoll sind.
           7. Bevorzuge kurze Begriffe (4–8 Zeichen), wenn möglich.
       	Beispiel (Oberbegriff „Automarken“):
@@ -154,7 +154,7 @@ func (gen *IdeaGenerator) GetWordPoolBySuperSolution(superSolution string) ([]st
           2. Undantag: För teman som Bilmärken eller Programmeringsspråk är kända varumärken eller utländska ord tillåtna.
           3. Vanligen ett ord (sammansättningar tillåtna); några få får ha högst 3 ord.
           4. Begrepp får vara liknande men inte identiska; undvik onödiga upprepningar.
-          5. Returnera endast en kommaseparerad lista på en rad – utan extra text eller kodblock.
+          5. Returnera endast en giltig JSON-array på en rad – utan extra text eller kodblock.
           6. Kvalitet före kvantitet: 10–15 bra begrepp räcker om fler inte är rimliga.
           7. Föredra korta begrepp (4–8 tecken) när det är möjligt.
       	Exempel (överbegrepp ”Bilmärken”):
