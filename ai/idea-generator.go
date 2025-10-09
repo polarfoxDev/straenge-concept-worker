@@ -47,7 +47,7 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
         5. überwiegend allgemein, aber auch spezielle Begriffe (z. B. "SpanischeKüche", "Süßwasserfische", "Deutschrap", "BieneMaja"),
         6. wenige ungewöhnliche/kuriose Kategorien,
         7. nur allgemein bekannte Begriffe, keine Neuschöpfungen.
-        Beispiele (Blacklist): Algorithmen, Amphibien, Antike, Architektur, Astronomie, Automarken, Ballsportarten, Berufe, Biologie, Buchgenres, Chemie, Computer, Datenschutzrecht, Disney, Energieformen, Entdecker, Fabelwesen, Farben, Filmgenres, Finanzprodukte, Früchte, Fußball, GameOfThrones, Gebirge, Gefühle, Gemüse, Getränke, Haustiere, Historische Figuren, Klimazonen, Komponisten, Krankheiten, Kunststile, Literatur, Mathematiker, Medizinische Fächer, Musikgenres, Musikinstrumente, Mythologie, Pflanzen, Physik, Politik, Programmieren, Religionen, Schach, ScienceFiction, Sprachen, Städte, Technik, Tiere, Videospiele, Weltkriege, Wissenschaftler
+        Beispiele (Blacklist): Algorithmen, Amphibien, Antike, Architektur, Astronomie, Automarken, Ballsportarten, Berufe, Biologie, Buchgenres, Chemie, Computer, Datenschutzrecht, Disney, Energieformen, Entdecker, Fabelwesen, Farben, Filmgenres, Finanzprodukte, Früchte, Fußball, GameOfThrones, Gebirge, Gefühle, Gemüse, Getränke, Haustiere, HistorischeFiguren, Klimazonen, Komponisten, Krankheiten, Kunststile, Literatur, Mathematiker, Medizinische Fächer, Musikgenres, Musikinstrumente, Mythologie, Pflanzen, Physik, Politik, Programmieren, Religionen, Schach, ScienceFiction, Sprachen, Städte, Technik, Tiere, Videospiele, Weltkriege, Wissenschaftler
         
 		Gib nur ein gültiges JSON-Array in einer Zeile zurück – ohne Zusatztext oder Codeblock, z. B. ["Begriff1","Begriff2",...]
 	`
@@ -60,7 +60,7 @@ func (gen *IdeaGenerator) GetSuperSolutions() ([]string, error) {
         5. mest allmänna men även specifika begrepp (t.ex. "spanskmat", "sötvattensfiskar", "rapmusik", "midsommar"),
         6. några ovanliga/knasiga kategorier,
         7. endast allmänt kända begrepp, inga nyskapade ord.
-		Exempel (svartlista): Algoritmer, Amfibier, Antiken, Arkitektur, Astronomi, Bilmärken, Bollsporter, Yrken, Biologi, Bokgenrer, Kemi, Datorer, Dataskyddslag, Disney, Energiformer, Upptäcktsresande, Mytiska varelser, Färger, Filmgenrer, Finansprodukter, Frukter, Fotboll, Game of Thrones, Berg, Känslor, Grönsaker, Drycker, Husdjur, Historiska personer, Klimatzoner, Kompositörer, Sjukdomar, Konststilar, Litteratur, Matematiker, MedicinskaÄmnen, Musikgenrer, Musikinstrument, Mytologi, Växter, Fysik, Politik, Programmering, Religioner, Schack, ScienceFiction, Språk, Städer, Teknik, Djur, Videospel, Världskrig, Vetenskapsmän
+		Exempel (svartlista): Algoritmer, Amfibier, Antiken, Arkitektur, Astronomi, Bilmärken, Bollsporter, Yrken, Biologi, Bokgenrer, Kemi, Datorer, Dataskyddslag, Disney, Energiformer, Upptäcktsresande, MytiskaVarelser, Färger, Filmgenrer, Finansprodukter, Frukter, Fotboll, GameOfThrones, Berg, Känslor, Grönsaker, Drycker, Husdjur, HistoriskaPersoner, Klimatzoner, Kompositörer, Sjukdomar, Konststilar, Litteratur, Matematiker, MedicinskaÄmnen, Musikgenrer, Musikinstrument, Mytologi, Växter, Fysik, Politik, Programmering, Religioner, Schack, ScienceFiction, Språk, Städer, Teknik, Djur, Videospel, Världskrig, Vetenskapsmän
 	
       	Returnera endast en giltig JSON-array på en rad – utan extra text eller kodblock. t.ex. ["Begrepp1","Begrepp2",...]
 	`
